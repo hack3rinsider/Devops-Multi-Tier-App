@@ -17,6 +17,7 @@ PostgreSQL – Primary relational database
 Redis – Caching layer for performance optimization
 RabbitMQ – Message broker for async job processing
 NGINX – Reverse proxy and load balancer
+
 🚀 Key Features
 🔐 User Authentication system (Login/Register)
 📊 Real-time system health monitoring
