@@ -1,0 +1,544 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./style.css";
+
+function App(){
+
+  const [users,setUsers]=React.useState([]);
+  const [tasks,setTasks]=React.useState([]);
+  const [reports,setReports]=React.useState([]);
+  const [logs,setLogs]=React.useState([]);
+  const [metrics,setMetrics]=React.useState([]);
+
+
+  const [authMode,setAuthMode]=React.useState('login');
+  const [username,setUsername]=React.useState('');
+  const [password,setPassword]=React.useState('');
+  const [token,setToken]=React.useState(
+    localStorage.getItem('token') || ''
+  );
+  const [currentUser,setCurrentUser]=React.useState(
+    JSON.parse(localStorage.getItem('user') || 'null')
+  );
+
+  async function login(){
+
+    const res = await fetch(
+      '/api/auth/login',
+      {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          username,
+          password
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if(data.token){
+
+      localStorage.setItem(
+        'token',
+        data.token
+      );
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(data.user)
+      );
+
+      setToken(data.token);
+      setCurrentUser(data.user);
+
+    }else{
+      alert(
+        data.error || 'Login failed'
+      );
+    }
+  }
+
+  async function registerUser(){
+
+    const res = await fetch(
+      '/api/auth/register',
+      {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          username,
+          password
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    alert(
+      data.message || data.error
+    );
+  }
+
+  function logout(){
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    setToken('');
+    setCurrentUser(null);
+  }
+
+
+
+  const [worker,setWorker]=React.useState({
+  pendingJobs:0,
+  processedJobs:0,
+  failedJobs:0,
+  lastJob:'-',
+  activity:[]
+});
+  const [cacheInfo,setCacheInfo]=React.useState(null);
+  const [cachedTasks,setCachedTasks]=React.useState([]);
+  const [lbResult,setLbResult]=React.useState(null);
+const [health,setHealth]=React.useState({});
+
+  async function loadAll(){
+
+    setUsers(await fetch("/api/database/users").then(r=>r.json()));
+    setTasks(await fetch("/api/database/tasks").then(r=>r.json()));
+    setReports(await fetch("/api/database/reports").then(r=>r.json()));
+    setLogs(await fetch("/api/database/audit_logs").then(r=>r.json()));
+    setMetrics(await fetch("/api/metrics").then(r=>r.json()));
+
+    try{
+      setWorker(
+        await fetch("/api/worker/info").then(r=>r.json())
+      );
+
+      setHealth(
+        await fetch("/api/system/health").then(r=>r.json())
+      );
+
+    }catch(e){}
+  }
+
+  async function generateReport(){
+
+    await fetch(
+      "/api/reports/generate",
+      {method:"POST"}
+    );
+
+    setTimeout(loadAll,1000);
+  }
+
+  async function testCache(){
+
+    const result=
+      await fetch("/api/cache/tasks")
+      .then(r=>r.json());
+
+    setCacheInfo(result);
+  }
+
+  async function clearCache(){
+
+    await fetch(
+      "/api/cache/clear",
+      {method:"POST"}
+    );
+
+    setCacheInfo(null);
+  }
+
+  async function testLoadBalancer(){
+
+    const result=
+      await fetch("/task-test")
+      .then(r=>r.json());
+
+    setLbResult(result);
+  }
+
+  React.useEffect(()=>{
+
+    loadAll();
+
+    const timer=setInterval(
+      loadAll,
+      5000
+    );
+
+  
+
+  if(!token){
+
+    return (
+
+      <div className="container">
+
+        <h1>DevOps Control Center</h1>
+
+<div style={{marginBottom:"20px"}}>
+
+Logged in as:
+<b>
+ {currentUser?.username}
+</b>
+
+&nbsp;
+
+(
+{currentUser?.role}
+)
+
+&nbsp;
+
+<button onClick={logout}>
+Logout
+</button>
+
+</div>
+
+        <h2>
+          Authentication Required
+        </h2>
+
+        <input
+          placeholder="username"
+          value={username}
+          onChange={e=>setUsername(e.target.value)}
+        />
+
+        <br/><br/>
+
+        <input
+          type="password"
+          placeholder="password"
+          value={password}
+          onChange={e=>setPassword(e.target.value)}
+        />
+
+        <br/><br/>
+
+        {
+          authMode==='login'
+          ?
+          <button onClick={login}>
+            Login
+          </button>
+          :
+          <button onClick={registerUser}>
+            Register
+          </button>
+        }
+
+        <button
+          onClick={()=>
+            setAuthMode(
+              authMode==='login'
+              ? 'register'
+              : 'login'
+            )
+          }
+        >
+          Switch To {
+            authMode==='login'
+            ? 'Register'
+            : 'Login'
+          }
+        </button>
+
+      </div>
+
+    );
+  }
+
+
+  return ()=>clearInterval(timer);
+
+  },[]);
+
+  return(
+    <div className="container">
+
+      <h1>DevOps Control Center</h1>
+
+      <button onClick={loadAll}>
+        Refresh Dashboard
+      </button>
+
+      
+<hr/>
+
+<h2>System Health</h2>
+
+<div>
+Gateway: {health.gateway || "?"}
+</div>
+
+<div>
+Postgres: {health.postgres || "?"}
+</div>
+
+<div>
+Redis: {health.redis || "?"}
+</div>
+
+<div>
+RabbitMQ: {health.rabbitmq || "?"}
+</div>
+
+<div>
+Worker: {health.worker || "?"}
+</div>
+
+<div>
+Auth: {health.auth || "?"}
+</div>
+
+<hr/>
+
+<h2>RabbitMQ Queue Dashboard</h2>
+
+<button onClick={generateReport}>
+Generate Report
+</button>
+
+<div style={{marginTop:"20px"}}>
+
+<h3>Queue Metrics</h3>
+
+<p>
+Pending Jobs:
+{worker.pendingJobs || 0}
+</p>
+
+<p>
+Processed Jobs:
+{worker.processedJobs || 0}
+</p>
+
+<p>
+Failed Jobs:
+{worker.failedJobs || 0}
+</p>
+
+<p>
+Last Job:
+{worker.lastJob || "-"}
+</p>
+
+</div>
+
+<div>
+
+<h3>Worker Activity Timeline</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Time</th>
+<th>Event</th>
+</tr>
+</thead>
+
+<tbody>
+
+{(worker.activity || []).map((a,i)=>(
+
+<tr key={i}>
+<td>{a.time}</td>
+<td>{a.message}</td>
+</tr>
+
+))}
+
+</tbody>
+
+</table>
+
+</div>
+
+<hr/>
+
+      <h2>Redis Cache Demo</h2>
+
+      <button onClick={testCache}>
+        Load Cached Tasks
+      </button>
+
+      <button onClick={clearCache}>
+        Clear Cache
+      </button>
+
+      {cacheInfo && (
+        <div>
+
+          <p>
+            Source:
+            {cacheInfo.source}
+          </p>
+
+          <p>
+            Cache:
+            {cacheInfo.cache}
+          </p>
+
+          <p>
+            Response Time:
+            {cacheInfo.responseTime} ms
+          </p>
+
+        </div>
+
+      )}
+
+      {cachedTasks.length>0 && (
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Task</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+          {cachedTasks.map(t=>(
+
+            <tr key={t.id}>
+              <td>{t.id}</td>
+              <td>{t.title}</td>
+              <td>{t.status}</td>
+            </tr>
+
+          ))}
+
+          </tbody>
+
+        </table>
+
+      )}
+
+      <hr/>
+
+      <h2>Load Balancer Demo</h2>
+
+      <button onClick={testLoadBalancer}>
+        Call Service
+      </button>
+
+      {lbResult && (
+        <pre>
+          {JSON.stringify(
+            lbResult,
+            null,
+            2
+          )}
+        </pre>
+      )}
+
+      <hr/>
+
+      
+<hr/>
+
+<h2>Architecture Flow</h2>
+
+<pre>
+Browser
+  |
+NGINX
+  |
+Gateway
+  |
++----------------------+
+|                      |
+Auth Service      Task Service
+|                      |
+PostgreSQL       Redis Cache
+                     |
+                 RabbitMQ
+                     |
+                Worker Service
+                     |
+                PostgreSQL
+</pre>
+
+<hr/>
+<section>
+        <h2>Users ({users.length})</h2>
+        <table>
+          <tbody>
+          {users.map(u=>(
+            <tr key={u.id}>
+              <td>{u.id}</td>
+              <td>{u.username}</td>
+              <td>{u.role}</td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Reports ({reports.length})</h2>
+        <table>
+          <tbody>
+          {reports.map(r=>(
+            <tr key={r.id}>
+              <td>{r.id}</td>
+              <td>{r.report_name}</td>
+              <td>{r.status}</td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Metrics</h2>
+        <table>
+          <tbody>
+          {metrics.map(m=>(
+            <tr key={m.id}>
+              <td>{m.metric_name}</td>
+              <td>{m.metric_value}</td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Audit Logs</h2>
+        <table>
+          <tbody>
+          {logs.map(l=>(
+            <tr key={l.id}>
+              <td>{l.id}</td>
+              <td>{l.action}</td>
+              <td>{l.details}</td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(
+ document.getElementById("root")
+).render(<App />);
