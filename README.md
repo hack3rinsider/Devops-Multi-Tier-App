@@ -1,73 +1,195 @@
 # 🚀 DevOps Multi-Tier Control Center
 
-A full-stack **DevOps + Microservices simulation project** demonstrating how modern cloud-native applications are built, deployed, and monitored.
+A production-style multi-tier microservices application built to demonstrate modern DevOps practices, distributed system design, containerization, CI/CD automation, asynchronous processing, caching, and load balancing.
 
 ---
 
-## 📌 Overview
+# 🏗️ Architecture
 
-This project simulates a real-world distributed system with multiple services working together through APIs, message queues, caching, and load balancing.
-
-It is designed for **DevOps learning, system design practice, and portfolio showcase**.
-
----
-
-## 🏗️ System Architecture
-
-- **Frontend (React)** → Dashboard UI for monitoring system
-- **API Gateway (Node.js)** → Routes all incoming requests
-- **Auth Service** → User authentication (login/register)
-- **Task Service** → Handles task creation & management
-- **Worker Service** → Processes background jobs asynchronously
-- **PostgreSQL** → Primary database
-- **Redis** → Caching layer
-- **RabbitMQ** → Message broker for async processing
-- **NGINX** → Reverse proxy + load balancer
+Frontend (React)
+↓
+NGINX Reverse Proxy
+↓
+API Gateway (Node.js)
+↓
+├── Auth Service
+├── Task Service (Replica 1)
+├── Task Service (Replica 2)
+└── Worker Service
+↓
+PostgreSQL + Redis + RabbitMQ
 
 ---
 
-## ⚙️ Key Features
+# ⚡ Tech Stack
 
-- 🔐 Authentication system (JWT-based login/register)
-- 📊 Real-time system health dashboard
-- 📈 Metrics tracking (requests, cache hits/misses, jobs)
-- ⚡ Redis caching with DB fallback
-- 🧵 RabbitMQ async job processing
-- 🔄 Load balancing across multiple services
-- 📜 Audit logs for system activity
-- 🐳 Fully Dockerized microservices setup
-
----
-
-## 🎯 Purpose
-
-This project is built to demonstrate:
-
-- Microservices architecture
-- Docker-based deployment
-- DevOps workflow understanding
-- Real-world system design concepts
-- Backend scalability patterns
+* React
+* Node.js
+* Express.js
+* PostgreSQL
+* Redis
+* RabbitMQ
+* NGINX
+* Docker
+* Docker Compose
+* Jenkins
+* GitHub
 
 ---
 
-## 🧠 What You Learn
+# ✨ Features
 
-- Container orchestration with Docker Compose
-- Service communication in distributed systems
-- Load balancing using NGINX
-- Message queues (RabbitMQ) usage
-- Caching strategies with Redis
-- Observability with metrics & logs
+### Authentication
+
+* User registration
+* User login
+* JWT-based authentication
+* Role support
+
+### Task Management
+
+* Create tasks
+* Retrieve tasks
+* Multi-instance task services
+* NGINX load balancing
+
+### Asynchronous Report Processing
+
+* Report generation requests
+* RabbitMQ message queue
+* Worker service processing
+* Automatic status updates
+
+### Caching Layer
+
+* Redis integration
+* Cache-first architecture
+* Database fallback
+
+### Metrics & Monitoring
+
+* Request metrics
+* Report metrics
+* System statistics dashboard
+* Health monitoring
+
+### Audit System
+
+* Audit log storage
+* Activity tracking
 
 ---
 
-## 🏁 Summary
+# 🐳 Dockerized Infrastructure
 
-A production-style **DevOps simulation platform** that replicates real-world backend infrastructure used in modern cloud systems like AWS/GCP environments.
+All services run inside Docker containers:
+
+* frontend
+* nginx
+* gateway
+* auth-service
+* task-service-1
+* task-service-2
+* worker-service
+* postgres
+* redis
+* rabbitmq
 
 ---
 
-## 👨‍💻 Author
+# 🔄 CI/CD Pipeline
 
-hack3rinsider
+Jenkins Pipeline:
+
+1. Checkout source code from GitHub
+2. Build Docker images
+3. Deploy services using Docker Compose
+4. Run automated validation tests
+
+Pipeline Stages:
+
+* Checkout
+* Build
+* Deploy
+* Test
+
+---
+
+# 🧪 End-to-End Validation
+
+The application includes automated validation proving:
+
+* API Gateway communication
+* PostgreSQL connectivity
+* Redis connectivity
+* RabbitMQ messaging
+* Worker processing
+* Database persistence
+
+Example verification:
+
+```bash
+curl -s -X POST http://localhost/api/reports/generate && \
+sleep 3 && \
+docker exec postgres psql -U devops -d devopsdb -c \
+"select report_name,status from reports order by id desc limit 1;"
+```
+
+Expected Output:
+
+```text
+Generated Report XXXXX | completed
+```
+
+This proves the complete workflow:
+
+Client
+→ NGINX
+→ Gateway
+→ RabbitMQ
+→ Worker
+→ PostgreSQL
+
+---
+
+# 🚀 Run Locally
+
+```bash
+git clone https://github.com/hack3rinsider/Devops-Multi-Tier-App.git
+
+cd Devops-Multi-Tier-App
+
+docker compose up -d
+```
+
+Access:
+
+Frontend:
+http://localhost
+
+RabbitMQ Dashboard:
+http://localhost:15672
+
+---
+
+# 🎯 DevOps Concepts Demonstrated
+
+* Microservices Architecture
+* Reverse Proxy
+* Load Balancing
+* Message Queues
+* Distributed Systems
+* CI/CD Pipelines
+* Containerization
+* Service Discovery
+* Caching Strategies
+* Background Job Processing
+
+---
+
+# 👨‍💻 Author
+
+Prashant Kaushik
+
+GitHub:
+https://github.com/hack3rinsider
