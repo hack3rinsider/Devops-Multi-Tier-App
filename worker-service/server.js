@@ -63,7 +63,7 @@ async function startWorker(){
    await pool.query(
    `
    UPDATE reports
-   SET job_status='processing'
+   SET status='processing'
    WHERE report_name=$1
    `,
    [job.reportName]
@@ -76,7 +76,7 @@ async function startWorker(){
    await pool.query(
    `
    UPDATE reports
-   SET job_status='completed'
+   SET status='completed'
    WHERE report_name=$1
    `,
    [job.reportName]

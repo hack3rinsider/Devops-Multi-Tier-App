@@ -275,12 +275,10 @@ app.post(
    INSERT INTO reports
    (
     report_name,
-    status,
-    job_status
+    status
    )
    VALUES(
     $1,
-    'queued',
     'queued'
    )
    `,
@@ -491,19 +489,19 @@ app.get('/api/reports/stats', async (req,res)=>{
   try{
 
     const queued = await pool.query(
-      "SELECT COUNT(*) FROM reports WHERE job_status='queued'"
+      "SELECT COUNT(*) FROM reports WHERE status='queued'"
     );
 
     const processing = await pool.query(
-      "SELECT COUNT(*) FROM reports WHERE job_status='processing'"
+      "SELECT COUNT(*) FROM reports WHERE status='processing'"
     );
 
     const completed = await pool.query(
-      "SELECT COUNT(*) FROM reports WHERE job_status='completed'"
+      "SELECT COUNT(*) FROM reports WHERE status='completed'"
     );
 
     const failed = await pool.query(
-      "SELECT COUNT(*) FROM reports WHERE job_status='failed'"
+      "SELECT COUNT(*) FROM reports WHERE status='failed'"
     );
 
     res.json({
@@ -541,13 +539,11 @@ app.post('/api/reports/generate-bulk', async (req,res)=>{
       INSERT INTO reports
       (
         report_name,
-        status,
-        job_status
+        status
       )
       VALUES
       (
         $1,
-        'queued',
         'queued'
       )
       `,
