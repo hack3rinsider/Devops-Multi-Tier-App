@@ -79,7 +79,7 @@ function App() {
         fetch("/api/database/tasks", { headers: auth }).then(r => r.json()).catch(() => []),
         fetch("/api/database/reports", { headers: auth }).then(r => r.json()).catch(() => []),
         fetch("/api/database/audit_logs").then(r => r.json()).catch(() => []),
-        fetch("/api/metrics", { headers: auth }).then(async r => r.ok ? r.json() : []).catch(() => []),
+        fetch("/api/metrics", { headers: auth }).then(r => r.json()).catch(() => []),
         fetch("/api/worker/info").then(r => r.json()).catch(() => ({})),
         fetch("/api/system/health").then(r => r.json()).catch(() => ({})),
         fetch("/api/reports/stats").then(r => r.json()).catch(() => ({}))
@@ -155,10 +155,8 @@ function App() {
     );
   }
 
-  const metricList = Array.isArray(metrics) ? metrics : [];
-
-const cacheHits = metricList.find(m => m.metric_name === 'cache_hits')?.metric_value || 0;
-  const cacheMisses = metricList.find(m => m.metric_name === 'cache_misses')?.metric_value || 0;
+  const cacheHits = metrics.find(m => m.metric_name === 'cache_hits')?.metric_value || 0;
+  const cacheMisses = metrics.find(m => m.metric_name === 'cache_misses')?.metric_value || 0;
   const totalCache = cacheHits + cacheMisses;
   const hitRate = totalCache > 0 ? ((cacheHits / totalCache) * 100).toFixed(1) : 0;
 

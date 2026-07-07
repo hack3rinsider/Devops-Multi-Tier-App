@@ -122,7 +122,7 @@ services:
     build: ./nginx
     container_name: nginx
     ports:
-      - "80:80"
+      - "8088:80"
     depends_on:
       - gateway
       - task-service-1
